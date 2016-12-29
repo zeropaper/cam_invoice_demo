@@ -22,7 +22,6 @@ class StartForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state)
   {
     $form['file'] = array(
-      '#required' => true,
       '#title' => t('Upload your invoice document'),
       '#type' => 'file'
     );
@@ -43,15 +42,16 @@ class StartForm extends FormBase {
       '#title' => t('Invoice category'),
       '#type' => 'select',
       '#options' => array(
-        'Software license costs' => t('Software license costs'),
-        'Travel expenses' => t('Travel expenses'),
+        // case is sensitive!
+        'Software License Costs' => t('Software License Costs'),
+        'Travel Expenses' => t('Travel Expenses'),
         'Misc' => t('Misc')
       )
     );
 
     $form['invoice_number'] = array(
       '#title' => t('Invoice number'),
-      '#type' => 'text',
+      '#type' => 'textfield',
       '#description' => t('(e.g. "I-12345")')
     );
 
@@ -76,7 +76,7 @@ class StartForm extends FormBase {
       $form_state->setValue('file', $file);
     }
     elseif ($file === FALSE) {
-      $form_state->setError($form['file']);
+      $form_state->setError($form['file'], t('Something is wrong with the file.'));
     }
     parent::validateForm($form, $form_state);
   }
@@ -102,10 +102,6 @@ class StartForm extends FormBase {
         'value' => $form_state->getValue('creditor'),
         'type' => 'String'
       ),
-      'invoiceNumber' => array(
-        'value' => $form_state->getValue('invoice_number'),
-        'type' => 'String'
-      ),
       'invoiceCategory' => array(
         'value' => $form_state->getValue('invoice_category'),
         'type' => 'String'
@@ -117,19 +113,15 @@ class StartForm extends FormBase {
           'filename' => $file->getFilename(),
           'mimeType' => $file->getMimeType()
         )
+      ),
+      'invoiceNumber' => array(
+        'value' => $form_state->getValue('invoice_number'),
+        'type' => 'String'
       )
     );
 
     $config = \Drupal::config('cam_invoice_demo.settings');
     $proc_id = $config->get('invoice_process_id');
-    try {
-      \Drupal::service('camunda_bpm_api.process_definition')->submitStartForm($proc_id, $variables, $business_key);
-      drupal_set_message(t('The invoice has been submitted and will now be reviewed for approval.'));
-    }
-    catch (Exception $error) {
-      drupal_set_message(t('Something wrong happend while submitting the invoice.<br/>@errMsg', array(
-        '@errMsg' => $error->getMessage()
-      )), 'error');
-    }
+    \Drupal::service('camunda_bpm_api.process_definition')->submitStartForm($proc_id, $variables, $business_key);
   }
 }
