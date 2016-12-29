@@ -1,5 +1,6 @@
 name: Camunda Invoice Demo
 type: module
+configure: cam_invoice_demo.admin_settings
 description: Integration module for Camunda BPM Platform Invoice Demo.
 core: 8.x
 package: Camunda

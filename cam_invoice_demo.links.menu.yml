@@ -1,0 +1,5 @@
+cam_invoice_demo.admin_form:
+  title: 'Invoice demo settings'
+  description: 'Manage settings for invoice demonstration'
+  parent: camunda_bpm_api.admin_settings
+  route_name: cam_invoice_demo.admin_settings

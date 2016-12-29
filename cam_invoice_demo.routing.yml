@@ -5,3 +5,11 @@ cam_invoice_demo.start_form:
     _title: 'Start'
   requirements:
     _permission: 'access content'
+cam_invoice_demo.admin_settings:
+  path: '/admin/config/cam_invoice_demo'
+  defaults:
+    _form: '\Drupal\cam_invoice_demo\Form\ModuleConfigurationForm'
+    _title: 'Invoice settings'
+  requirements:
+    _permission: 'administer site configuration'
+
