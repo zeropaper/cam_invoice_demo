@@ -1,0 +1,7 @@
+cam_invoice_demo.start_form:
+  path: '/invoice'
+  defaults:
+    _form: '\Drupal\cam_invoice_demo\Form\StartForm'
+    _title: 'Start'
+  requirements:
+    _permission: 'access content'

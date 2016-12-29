@@ -1,0 +1,7 @@
+name: Camunda Invoice Demo
+type: module
+description: Integration module for Camunda BPM Platform Invoice Demo.
+core: 8.x
+package: Camunda
+dependencies:
+  - camunda_bpm_api
