@@ -28,7 +28,7 @@ class ModuleConfigurationForm extends ConfigFormBase {
   }
 
   private function fetchProcessDefinitions() {
-    return \Drupal::service('camunda_bpm_api.process_definition')->get();
+    return \Drupal::service('camunda_bpm_api.process_definition')->getList();
   }
 
   /**

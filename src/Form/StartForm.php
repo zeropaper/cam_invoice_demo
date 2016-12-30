@@ -43,7 +43,7 @@ class StartForm extends FormBase {
       '#type' => 'select',
       '#options' => array(
         // case is sensitive!
-        'Software License Costs' => t('Software License Costs'),
+        'Software License costs' => t('Software License Costs'),
         'Travel Expenses' => t('Travel Expenses'),
         'Misc' => t('Misc')
       )
@@ -68,16 +68,24 @@ class StartForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state)
   {
-    $validators = array();
-    $destination = FALSE;
+    // Make sure there's an upload to process.
+    $all_files = \Drupal::request()->files->get('files', array());
+    if (empty($all_files['file'])) {
+      $form_state->setError($form['file'], t('An invoice document is required'));
+    }
+    else {
+      $validators = array();
+      $destination = FALSE;
+      $file = file_save_upload('file', $validators, $destination, 0);
 
-    $file = file_save_upload('file', $validators, $destination, 0);
-    if ($file) {
-      $form_state->setValue('file', $file);
+      if ($file) {
+        $form_state->setValue('file', $file);
+      }
+      elseif ($file === FALSE) {
+        $form_state->setError($form['file'], t('Something is wrong with the file.'));
+      }
     }
-    elseif ($file === FALSE) {
-      $form_state->setError($form['file'], t('Something is wrong with the file.'));
-    }
+
     parent::validateForm($form, $form_state);
   }
 
@@ -122,6 +130,29 @@ class StartForm extends FormBase {
 
     $config = \Drupal::config('cam_invoice_demo.settings');
     $proc_id = $config->get('invoice_process_id');
-    \Drupal::service('camunda_bpm_api.process_definition')->submitStartForm($proc_id, $variables, $business_key);
+
+    $process_definition_service = \Drupal::service('camunda_bpm_api.process_definition');
+    $data = $process_definition_service->submitStartForm($proc_id, $variables, $business_key);
+    if (!empty($data)) {
+      drupal_set_message(t('The invoice process has been started.', array(
+        '@procInstId' => $data['id']
+      )));
+
+      $module_handler = \Drupal::service('module_handler');
+      if ($module_handler->moduleExists('camunda_bpm_browser')){
+        // display the process instance within Drupal context
+        $form_state->setRedirect('camunda_bpm_browser.process_instance_details', array(
+          'procInstId' => $data['id']
+        ));
+      }
+      else {
+        drupal_set_message(t('Check the <a href="http://localhost:8080/camunda/app/cockpit/default/#process-instance/@procInstId">process instance</a> in Cockpit', array(
+          '@procInstId' => $data['id']
+        )));
+      }
+    }
+    else {
+      drupal_set_message(t('Something went wront with the invoice submission.'), 'error');
+    }
   }
 }
